@@ -1,5 +1,5 @@
 //
-//  HelloWorldLayer.m
+//  HelloWorldLayer2.m
 //  Cocos2DSimpleGame
 //
 //  Created by Yasushi Komori on 4/16/14.
@@ -8,24 +8,26 @@
 
 
 // Import the interfaces
+#import "HelloWorldLayer3.h"
 #import "HelloWorldLayer.h"
+#import "HelloWorldLayer2.h"
 
 // Needed to obtain the Navigation Controller
 #import "AppDelegate.h"
 
-#pragma mark - HelloWorldLayer
+#pragma mark - HelloWorldLayer2
 
-// HelloWorldLayer implementation
-@implementation HelloWorldLayer
+// HelloWorldLayer2 implementation
+@implementation HelloWorldLayer2
 
-// Helper class method that creates a Scene with the HelloWorldLayer as the only child.
+// Helper class method that creates a Scene with the HelloWorldLayer2 as the only child.
 +(CCScene *) scene
 {
 	// 'scene' is an autorelease object.
 	CCScene *scene = [CCScene node];
 	
 	// 'layer' is an autorelease object.
-	HelloWorldLayer *layer = [HelloWorldLayer node];
+	HelloWorldLayer2 *layer = [HelloWorldLayer2 node];
 	
 	// add layer as a child to scene
 	[scene addChild: layer];
@@ -36,7 +38,7 @@
 
 
 - (void) addMonster {
-    
+/*
     int monster_type = (arc4random() % 3) + 1;
     NSString * image_str = [NSString stringWithFormat:@"monster_%d.png" , monster_type];
     CCSprite * monster = [CCSprite spriteWithFile:image_str];
@@ -67,75 +69,50 @@
     }];
     [monster runAction:[CCSequence actions:actionMove, actionMoveDone, nil]];
     [self setIsTouchEnabled:YES];
-
+*/
     
 }
 
 
-- (void)ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    
-    // Choose one of the touches to work with
-    UITouch *touch = [touches anyObject];
-    CGPoint location = [self convertTouchToNodeSpace:touch];
-    
-    // Set up initial location of projectile
-    CGSize winSize = [[CCDirector sharedDirector] winSize];
-    CCSprite *projectile = [CCSprite spriteWithFile:@"projectile.png"];
-    projectile.position = ccp(20, winSize.height/2);
-    
-    // Determine offset of location to projectile
-    CGPoint offset = ccpSub(location, projectile.position);
-    
-    // Bail out if you are shooting down or backwards
-    if (offset.x <= 0) return;
-    
-    // Ok to add now - we've double checked position
-    [self addChild:projectile];
-    
-    int realX = winSize.width + (projectile.contentSize.width/2);
-    float ratio = (float) offset.y / (float) offset.x;
-    int realY = (realX * ratio) + projectile.position.y;
-    CGPoint realDest = ccp(realX, realY);
-    
-    // Determine the length of how far you're shooting
-    int offRealX = realX - projectile.position.x;
-    int offRealY = realY - projectile.position.y;
-    float length = sqrtf((offRealX*offRealX)+(offRealY*offRealY));
-    float velocity = 480/1; // 480pixels/1sec
-    float realMoveDuration = length/velocity;
-    
-    CCSprite *player = [self getChildByTag:3];
-    //player.anchorPoint = ccp(0, 0);
-    //player.position = ccp(location.x , location.y);
-    [player runAction:[CCMoveTo actionWithDuration:1 position:ccp(location.x , location.y)]];
-    
-    // Move projectile to actual endpoint
-    [projectile runAction:
-     [CCSequence actions:
-      [CCMoveTo actionWithDuration:realMoveDuration position:realDest],
-      [CCCallBlockN actionWithBlock:^(CCNode *node) {
-         [node removeFromParentAndCleanup:YES];
-     }],
-      nil]];
-    
-}
-
--(void)gameLogic:(ccTime)dt {
-    [self addMonster];
-}
 
 // on "init" you need to initialize your instance
 -(id) init
 {
-    if ((self = [super initWithColor:ccc4(255,255,255,255)])) {
+    if (self = [super init]) {
         CGSize winSize = [CCDirector sharedDirector].winSize;
-        CCSprite *player = [CCSprite spriteWithFile:@"player.png"];
-        player.position = ccp(player.contentSize.width/2, winSize.height/2);
-        [self addChild:player z:1 tag:3];
+        CCSprite *player = [CCSprite spriteWithFile:@"background.png"];
+        player.anchorPoint = ccp(0, 0);
+        player.position = ccp(0, 0);
+        player.scaleX = winSize.width / player.contentSize.width;
+        player.scaleY = winSize.height / player.contentSize.height;
+        
+        //CCSprite *button = [CCSprite spriteWithFile:@"start-button.png"];
+        
+        CCMenuItem *button = [CCMenuItemImage
+                                    itemFromNormalImage:@"start-button2.png" selectedImage:@"start-button2.png"
+                                    target:self selector:@selector(starButtonTapped:)];
+        
+        button.position = ccp( winSize.width/2 , winSize.height/4);
+        //button.scaleX =button.contentSize.width;
+        //button.scaleY =button.contentSize.height/2;
+        CCMenu *starMenu = [CCMenu menuWithItems:button, nil];
+        starMenu.position = CGPointZero;
+        
+
+        
+
+
+        
+        [self addChild:player];
+        [self addChild:starMenu];
+        [self setIsTouchEnabled:YES];
     }
-    
-    [self schedule:@selector(gameLogic:) interval:1.0];
     return self;
+}
+
+- (void)starButtonTapped:(id)sender {
+    [[CCDirector sharedDirector] replaceScene:[CCTransitionFade transitionWithDuration:1.0 scene:[HelloWorldLayer3 scene] ]];
+
 }
 
 // on "dealloc" you need to release all your retained objects
